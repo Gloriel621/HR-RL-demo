@@ -8,20 +8,21 @@ from torch.distributions import Categorical
 
 from model import PPO
 from environment import Environment
-from data import employees, branches
+from data.data import employees, branches
 
 PRINT_INTERVAL = 50
-logger = structlog.get_logger(__name__)
 
 
 class Trainer:
     def __init__(self):
+        self._init_hyperparameters()
         self.employees= employees
         self.branches = branches
         self.env = Environment(self.employees, self.branches)
         self.num_employees = self.env.num_employees
         self.num_branches = self.env.num_branches
-        self.model = PPO(self.num_employees, self.num_branches)
+        self.employee_model = PPO(self.num_employees)
+        self.branch_model = PPO(self.num_branches)
 
     def train(self):
         rewards = []
@@ -34,7 +35,7 @@ class Trainer:
             try:
                 while not done:
                     for t in range(self.mini_batch_size):
-                        prob = self.model.pi(torch.from_numpy(state).float())
+                        prob = self.employee_model.pi(torch.from_numpy(state).float())
                         prob = prob.reshape(self.num_employees, self.num_branches)
                         prob = prob * torch.from_numpy(1 - self.env.infeasible).float()
                         prob = F.normalize(prob, dum=1, p=1.0)
@@ -43,7 +44,7 @@ class Trainer:
                         categorical_distribution = Categorical(prob)
                         action = categorical_distribution.sample().item()
                         new_state, reward, done = self.env.step(action)
-                        self.model.put_data(
+                        self.employee_model.put_data(
                             (
                                 copy.deepcopy(state),
                                 action,
@@ -57,19 +58,20 @@ class Trainer:
                         if done:
                             rewards.append(reward)
                             break
-                    self.model.train_net()
+                    self.employee_model.train_net()
             except Exception as e:
-                logger.error(e)
-                torch.save(self.model.state_dict(), f"hr_ppo_demo_{episode}.pt")
-                self.model = PPO(self.num_employees, self.num_branches, **self.hyperparameters)
+                print(e)
+                torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
+                self.employee_model = PPO(self.num_employees)
+                self.branch_model = PPO(self.num_branches)
                 episode = 0
             else:
                 episode += 1
 
                 if episode % PRINT_INTERVAL == 0 and episode != 0:
-                    logger.info("Episode :{}, avg reward : {:.2f}".format(episode, np.mean(rewards)))
+                    print("Episode :{}, avg reward : {:.2f}".format(episode, np.mean(rewards)))
                     rewards = []
-        torch.save(self.model.state_dict(), f"hr_ppo_demo_{episode}.pt")
+        torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
 
     def _init_hyperparameters(self):
         self.max_episodes = 10000

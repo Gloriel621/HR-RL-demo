@@ -1,26 +1,24 @@
-import os
 import copy
-from typing import Tuple
 
 import pandas as pd
 import numpy as np
 
-from data import Employees, Branches
+from data.data import employees, branches
 
 
 class Environment:
     def __init__(
         self,
-        employees: Employees,
-        branches: Branches,
+        employees: employees,
+        branches: branches,
     ):
         self.init_employees = employees
         self.employees = copy.deepcopy(self.init_employees)
         self.init_branches = branches
         self.branches = copy.deepcopy(self.init_branches)
 
-        self.num_employees = len(employees.id)
-        self.num_branches = len(branches.id)
+        self.num_employees = len(employees)
+        self.num_branches = len(branches)
 
     def reset(self):
         self.employees = copy.deepcopy(self.init_employees)
