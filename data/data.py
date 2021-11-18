@@ -9,9 +9,8 @@ class Employee():
         self.relative_list : list = g # 해당 지역본부에 배치될 직원 명단 중에 친척 리스트
 
 class Branch():
-    def __init__(self, a, b, c, d, e):
+    def __init__(self, a, c, d, e):
         self.required_personnel : int = a # TO
-        self.required_vm : int = b # vm 인력 TO
         self.required_task_score : dict = c # 필요 역량 점수 딕셔너리
         self.required_rank : dict = d
         self.inferiorean = e #열악 지점 여부
@@ -20,13 +19,11 @@ class Branch():
         self.current_personnel : int = 0
         self.current_rank_num : dict = {4:  0, 5 : 0}
         self.current_task_score : dict = {'e': 0, 'i': 0}
-        self.current_num_newbie : int = 0
             
     def reset(self):
         self.current_personnel : int = 0
         self.current_rank_num : dict = {4:  0, 5 : 0}
         self.current_task_score : dict = {'e': 0, 'i': 0}
-        self.current_num_newbie : int = 0
 
 e0 = Employee(5, {'e': 80, 'i': 100},[3],[0, 2],False,True,[6, 14]) 
 e1 = Employee(5, {'e': 50, 'i': 60},[3],[1, 4],False,False,[]) 
@@ -47,11 +44,11 @@ e15 = Employee(5, {'e': 150, 'i': 120},[2],[2, 1],False,False,[])
 e16 = Employee(5, {'e': 90, 'i': 100},[1],[0, 1],False,False,[])
 e17 = Employee(5, {'e': 120, 'i': 80},[3],[2, 1],False,False,[])
 
-b0 = Branch(3, 1, {'e': 120,'i' : 150}, {4 : 1, 5 : 2}, 0)
-b1 = Branch(2, 0, {'e': 100,'i' : 150}, {4 : 1, 5 : 1}, 0)
-b2 = Branch(5, 2, {'e': 200,'i' : 250}, {4 : 1, 5 : 4}, 0)
-b3 = Branch(3, 0, {'e': 180,'i' : 180}, {4 : 1, 5 : 2}, 1)
-b4 = Branch(2, 0, {'e': 100,'i' : 100}, {4 : 1, 5 : 1}, 0)
+b0 = Branch(3, {'e': 120,'i' : 150}, {4 : 1, 5 : 2}, 0)
+b1 = Branch(2, {'e': 100,'i' : 150}, {4 : 1, 5 : 1}, 0)
+b2 = Branch(5, {'e': 200,'i' : 250}, {4 : 1, 5 : 4}, 0)
+b3 = Branch(3, {'e': 180,'i' : 180}, {4 : 1, 5 : 2}, 1)
+b4 = Branch(2, {'e': 100,'i' : 100}, {4 : 1, 5 : 1}, 0)
 
 employees = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10,
              e11, e12, e13, e14, e15, e16, e17]

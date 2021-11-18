@@ -11,6 +11,7 @@ from environment import Environment
 from data.data import employees, branches
 
 PRINT_INTERVAL = 50
+logger = structlog.get_logger(__name__)
 
 
 class Trainer:
@@ -21,8 +22,8 @@ class Trainer:
         self.env = Environment(self.employees, self.branches)
         self.num_employees = self.env.num_employees
         self.num_branches = self.env.num_branches
-        self.employee_model = PPO(self.num_employees)
-        self.branch_model = PPO(self.num_branches)
+        self.employee_model = PPO(self.num_employees * self.num_branches)
+        #self.branch_model = PPO(self.num_branches)
 
     def train(self):
         rewards = []
@@ -38,7 +39,7 @@ class Trainer:
                         prob = self.employee_model.pi(torch.from_numpy(state).float())
                         prob = prob.reshape(self.num_employees, self.num_branches)
                         prob = prob * torch.from_numpy(1 - self.env.infeasible).float()
-                        prob = F.normalize(prob, dum=1, p=1.0)
+                        prob = F.normalize(prob, dim=1, p=1.0)
                         prob = prob.reshape(-1, self.num_employees * self.num_branches)
 
                         categorical_distribution = Categorical(prob)
@@ -60,10 +61,11 @@ class Trainer:
                             break
                     self.employee_model.train_net()
             except Exception as e:
-                print(e)
-                torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
-                self.employee_model = PPO(self.num_employees)
-                self.branch_model = PPO(self.num_branches)
+                logger.info(f"episode : {episode}")
+                logger.error(e)
+                #torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
+                self.employee_model = PPO(self.num_employees * self.num_branches)
+                #self.branch_model = PPO(self.num_branches)
                 episode = 0
             else:
                 episode += 1
