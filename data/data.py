@@ -4,20 +4,20 @@ class Employee():
         self.task_score : dict = b #{'business' : 0, 'individual' : 0} # 경력지수
         self.distant_branch_list : list = c # 격지 지점 리스트, barnch index
         self.preferred_branch_list : list = d # 선호 지점 리스트, branch index
-        self.worked_at_distant = e # 2년 내 격지 근무 여부
-        self.worked_at_inferior = f # 2년 내 열악지점 근무 여부
+        self.worked_at_preferred = e # 직전에 선호지점 근무 여부
+        self.worked_at_inferior = f # 직전에 열악지점 근무 여부
         self.relative_list : list = g # 해당 지역본부에 배치될 직원 명단 중에 친척 리스트
 
 class Branch():
     def __init__(self, a, c, d, e):
         self.required_personnel : int = a # TO
         self.required_task_score : dict = c # 필요 역량 점수 딕셔너리
-        self.required_rank : dict = d
-        self.inferiorean = e #열악 지점 여부
+        self.required_rank_num : dict = d # 필요 직급 수
+        self.inferior = e #열악 지점 여부
         
         #현재 지점에 배치된 사람의 수 저장
         self.current_personnel : int = 0
-        self.current_rank_num : dict = {4:  0, 5 : 0}
+        self.current_rank_num : dict = {4: 0, 5: 0}
         self.current_task_score : dict = {'e': 0, 'i': 0}
             
     def reset(self):
@@ -33,16 +33,16 @@ e4 = Employee(4, {'e': 90, 'i': 100},[4],[1, 0],True,False,[])
 e5 = Employee(4, {'e': 60, 'i': 90},[3],[2, 4],False,True,[]) 
 e6 = Employee(5, {'e': 40, 'i': 60},[0],[1, 3],False,False,[0, 14])
 e7 = Employee(5, {'e': 60, 'i': 40},[4],[3, 2],False,False,[])
-e8 = Employee(4, {'e': 70, 'i': 80},[3],[0, 4],True,True,[])
+e8 = Employee(4, {'e': 70, 'i': 80},[3],[0, 4],True,False,[])
 e9 = Employee(5, {'e': 60, 'i': 40},[3, 4],[2, 1],False,False,[]) 
 e10 = Employee(5, {'e': 80, 'i': 50},[0],[3, 1],False,False,[11]) 
 e11 = Employee(4, {'e': 50, 'i': 70},[0],[4, 1],True,False,[10])
 e12 = Employee(5, {'e': 70, 'i': 80},[],[3, 1],False,False,[])
 e13 = Employee(5, {'e': 70, 'i': 30},[0],[3, 2],False,False,[])
 e14 = Employee(5, {'e': 100, 'i': 40},[4],[0, 3],False,False,[0, 6])
-e15 = Employee(5, {'e': 150, 'i': 120},[2],[2, 1],False,False,[])
-e16 = Employee(5, {'e': 90, 'i': 100},[1],[0, 1],False,False,[])
-e17 = Employee(5, {'e': 120, 'i': 80},[3],[2, 1],False,False,[])
+#e15 = Employee(5, {'e': 150, 'i': 120},[2],[2, 1],False,False,[])
+#e16 = Employee(5, {'e': 90, 'i': 100},[1],[0, 1],False,False,[])
+#e17 = Employee(5, {'e': 120, 'i': 80},[3],[2, 1],False,False,[])
 
 b0 = Branch(3, {'e': 120,'i' : 150}, {4 : 1, 5 : 2}, 0)
 b1 = Branch(2, {'e': 100,'i' : 150}, {4 : 1, 5 : 1}, 0)
@@ -51,6 +51,6 @@ b3 = Branch(3, {'e': 180,'i' : 180}, {4 : 1, 5 : 2}, 1)
 b4 = Branch(2, {'e': 100,'i' : 100}, {4 : 1, 5 : 1}, 0)
 
 employees = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10,
-             e11, e12, e13, e14, e15, e16, e17]
+             e11, e12, e13, e14]
 
 branches = [b0, b1, b2, b3, b4]

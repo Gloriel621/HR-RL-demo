@@ -64,6 +64,13 @@ class Environment:
         # constraints. 매 step마다 조건 확인
         """
 
+        # TO 초과 여부
+        rank = self.employees[employee_idx].rank
+        if self.branches[branch_idx].current_rank_num[rank] >= self.branches[branch_idx].required_rank_num[rank]:
+            return False
+
+        # 친인척 동일지점 배치 불가
+
         return True
 
     def update_current_state_infos(self, employee_idx: int, branch_idx: int):
@@ -85,13 +92,12 @@ class Environment:
         """
         # 지점의 각 to별 정원과 실제 배치된 인원이 다를 시 해당 배치 불가능
         for i in range(len(self.branches)):
-            num_required_rank = self.branches[i].required_rank
+            num_required_rank = self.branches[i].required_rank_num
             num_current_rank = self.branches[i].current_rank_num
-
             if num_required_rank != num_current_rank : 
-                return False
+                return True
 
-        return True
+        return False
 
     def calculate_reward(self):
         """
@@ -129,35 +135,60 @@ class Environment:
 
     def calculate_working_months_reward(self):
 
-        employee_working_months_reward = -1
+        employee_working_months_reward = 0
         return employee_working_months_reward
 
     def calculate_preferring_branch_rotation_reward(self):
+        # 직전에 선호지점에 배치되지 않았었는데, 이번에도 선호지점이 아니면 감점
 
-        preferring_branch_rotation_reward = -1
+        preferring_branch_rotation_reward = 0
+        for employee_idx in range(self.num_employees):
+            for branch_idx in range(self.num_branches):
+                if (self.state[employee_idx][branch_idx] == 1 
+                and not branch_idx in self.employees[employee_idx].preferred_branch_list
+                and not self.employees[employee_idx].worked_at_preferred):
+                    preferring_branch_rotation_reward -= 1
+        
+
         return preferring_branch_rotation_reward
 
     def calculate_popular_branch_rotation_reward(self):
+        # 선호지점 연속배치, 열악지점 연속배치 시 감점
+        # 직전 선호지점 배치 후 이번에도 선호지점이라면 감점
+        # 직전 열악지점 배치 후 이번에도 열악지점이라면 감점
 
-        employee_popular_branch_rotation_reward = -1
+        employee_popular_branch_rotation_reward = 0
+
+        for employee_idx in range(self.num_employees):
+            for branch_idx in range(self.num_branches):
+                if (self.state[employee_idx][branch_idx] == 1 
+                and branch_idx in self.employees[employee_idx].preferred_branch_list
+                and self.employees[employee_idx].worked_at_preferred):
+                    employee_popular_branch_rotation_reward -= 1
+
+                if (self.state[employee_idx][branch_idx] == 1 
+                and self.branches[branch_idx].inferior
+                and self.employees[employee_idx].worked_at_inferior):
+                    employee_popular_branch_rotation_reward -= 1
+
         return employee_popular_branch_rotation_reward
 
     def calculate_accessible_branch_reward(self):
 
-        employee_accessible_branch_reward = -1
+        employee_accessible_branch_reward = 0
         return employee_accessible_branch_reward
 
     def calculate_remote_placement_priority_reward(self):
 
-        employee_remote_placement_priority_reward = -1
+        employee_remote_placement_priority_reward = 0
         return employee_remote_placement_priority_reward
 
     def calculate_remote_placement_count_reward(self):
         
-        remote_placement_counts_reward = -1
+        remote_placement_counts_reward = 0
         return remote_placement_counts_reward
 
     def calculate_career_score_reward(self):
         
-        career_score_reward = -1
+        career_score_reward = 0
         return career_score_reward

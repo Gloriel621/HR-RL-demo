@@ -41,15 +41,15 @@ class Trainer:
                         prob = prob * torch.from_numpy(1 - self.env.infeasible).float()
                         prob = F.normalize(prob, dim=1, p=1.0)
                         prob = prob.reshape(-1, self.num_employees * self.num_branches)
-
                         categorical_distribution = Categorical(prob)
+                        
                         action = categorical_distribution.sample().item()
                         new_state, reward, done = self.env.step(action)
                         self.employee_model.put_data(
                             (
                                 copy.deepcopy(state),
                                 action,
-                                float(reward),
+                                float(reward/64),
                                 copy.deepcopy(new_state),
                                 prob[0][action].item(),
                                 done,
@@ -61,7 +61,7 @@ class Trainer:
                             break
                     self.employee_model.train_net()
             except Exception as e:
-                logger.info(f"episode : {episode}")
+                logger.info(f"episode : {episode}, reward : {reward}")
                 logger.error(e)
                 #torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
                 self.employee_model = PPO(self.num_employees * self.num_branches)
@@ -70,11 +70,11 @@ class Trainer:
             else:
                 episode += 1
 
-                if episode % PRINT_INTERVAL == 0 and episode != 0:
-                    print("Episode :{}, avg reward : {:.2f}".format(episode, np.mean(rewards)))
-                    rewards = []
+            if episode % PRINT_INTERVAL == 0 and episode != 0:
+                print("Episode :{}, avg reward : {:.2f}".format(episode, np.mean(rewards)))
+                rewards = []
         torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
 
     def _init_hyperparameters(self):
-        self.max_episodes = 10000
-        self.mini_batch_size = 50
+        self.max_episodes = 5000
+        self.mini_batch_size = 10
