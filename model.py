@@ -8,15 +8,16 @@ max_episodes = 10000
 mini_batch_size = 50
 
 class PPO(nn.Module):
-    def __init__(self, num_input):
+    def __init__(self, num_input, num_output):
         super(PPO, self).__init__()
         self._init_hyperparameters()
         self.data = []
         self.num_input = num_input
+        self.num_output = num_output
              
         self.fc1 = nn.Linear(self.num_input, 512)
         self.fc2 = nn.Linear(512,256)
-        self.fc_pi = nn.Linear(256, self.num_input)
+        self.fc_pi = nn.Linear(256, self.num_output)
         self.fc_v = nn.Linear(256,1)
         self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
 

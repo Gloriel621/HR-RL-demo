@@ -33,9 +33,9 @@ class Environment:
         self.state = np.zeros((self.num_employees, self.num_branches))
         self.infeasible = np.zeros((self.num_employees, self.num_branches))
 
-    def step(self, action: int):
-        employee_idx = int(action / self.num_branches)
-        branch_idx = int(action % self.num_branches)
+    def step(self, action: tuple):
+        employee_idx = action[0]
+        branch_idx = action[1]
 
         is_feasible = self.is_feasible_step(employee_idx, branch_idx)
         if is_feasible:
