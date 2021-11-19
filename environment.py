@@ -42,6 +42,7 @@ class Environment:
             self.num_steps += 1
             self.update_current_state_infos(employee_idx, branch_idx)
             if self.num_steps == self.num_required_employees:
+                
                 self.done = True
                 is_invalid = self.is_invalid_placement()
                 if is_invalid:

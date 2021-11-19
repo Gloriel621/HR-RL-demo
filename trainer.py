@@ -19,11 +19,10 @@ class Trainer:
         self._init_hyperparameters()
         self.employees= employees
         self.branches = branches
-        self.env = Environment(self.employees, self.branches)
+        self.env = Environment(employees, branches)
         self.num_employees = self.env.num_employees
         self.num_branches = self.env.num_branches
-        self.employee_model = PPO(self.num_employees * self.num_branches, self.num_employees)
-        self.branch_model = PPO(self.num_employees * self.num_branches, self.num_branches)
+        self.model = PPO(self.num_employees, self.num_branches)
 
     def train(self):
         rewards = []
@@ -37,46 +36,27 @@ class Trainer:
             while not done:
                 for t in range(self.mini_batch_size):
 
-                    employee = self._sample_from_network(self.employee_model)
-                    while np.sum(1 - self.env.infeasible[employee]) == 0:
-                        employee = self._sample_from_network(self.employee_model)
-                    
-                    branch = self._sample_from_network(self.branch_model)
+                    prob1 = self.model.pi(torch.from_numpy(self.env.state).float())
+                    prob1 = prob1 * torch.from_numpy(np.any(1-self.env.infeasible, axis=1)).float()
+                    prob1 = F.normalize(prob1, dim=1, p=1.0)
+                    categorical_distribution = Categorical(prob1)
+                    employee = categorical_distribution.sample().item()
 
+                    prob2 = self.model.pi2(torch.from_numpy(self.env.state).float())
+                    prob2 =  F.normalize(prob2, dim=1, p=1.0)
+                    categorical_distribution = Categorical(prob2)
+                    branch = categorical_distribution.sample().item()
 
-
-                    prob2 = self.branch_model.pi(torch.from_numpy(state).float())
-                    prob2 = prob2 * torch.from_numpy(1 - self.env.infeasible[employee]).float()
-                    prob2 = F.normalize(prob2, dim=1, p=1.0)
-                    distribution2 = Categorical(prob2)
-                    branch = distribution2.sample().item()
-
-                    # prob = prob.reshape(self.num_employees, self.num_branches)
-                    # prob = prob * torch.from_numpy(1 - self.env.infeasible).float()
-                    # prob = F.normalize(prob, dim=1, p=1.0)
-                    # prob = prob.reshape(-1, self.num_employees * self.num_branches)
-                    # categorical_distribution = Categorical(prob)
-                    
-                    # action = categorical_distribution.sample().item()
                     action = (employee, branch)
 
                     new_state, reward, done = self.env.step(action)
-                    self.employee_model.put_data(
+                    self.model.put_data(
                         (
                             copy.deepcopy(state),
                             employee,
                             float(reward/128),
                             copy.deepcopy(new_state),
                             prob1[0][employee].item(),
-                            done,
-                        )
-                    )
-                    self.branch_model.put_data(
-                        (
-                            copy.deepcopy(state),
-                            branch,
-                            float(reward/128),
-                            copy.deepcopy(new_state),
                             prob2[0][branch].item(),
                             done,
                         )
@@ -85,14 +65,13 @@ class Trainer:
                     if done:
                         rewards.append(reward)
                         break
-                self.employee_model.train_net()
-                self.branch_model.train_net()
+                self.model.train_net()
             # except Exception as e:
             #     logger.info(f"episode : {episode}, reward : {reward}")
             #     logger.error(e)
-            #     #torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
-            #     self.employee_model = PPO(self.num_employees * self.num_branches)
-            #     #self.branch_model = PPO(self.num_branches)
+            #     #torch.save(employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
+            #     employee_model = PPO(self.num_employees * self.num_branches)
+            #     #branch_model = PPO(self.num_branches)
             #     episode = 0
             #else:
             episode += 1
@@ -100,19 +79,7 @@ class Trainer:
             if episode % PRINT_INTERVAL == 0 and episode != 0:
                 print("Episode :{}, avg reward : {:.2f}".format(episode, np.mean(rewards)))
                 rewards = []
-        torch.save(self.employee_model.state_dict(), f"hr_ppo_demo_{episode}.pt")
-    
-    def _sample_from_network(self, network:PPO, mode = "employee"):
-
-        prob = network.pi(torch.from_numpy(self.state).float())
-        if mode == "branch":
-            prob = prob * torch.from_numpy(1 - self.env.infeasible[employee]).float()
-        prob = F.normalize(prob, dim=1, p=1.0)
-        distribution = Categorical(prob)
-        
-        sample = distribution.sample().item()
-
-        return sample
+        torch.save(self.model.state_dict(), f"hr_ppo_demo_{episode}.pt")
 
 
     def _init_hyperparameters(self):
