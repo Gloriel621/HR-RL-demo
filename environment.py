@@ -34,8 +34,8 @@ class Environment:
         self.infeasible = np.zeros((self.num_employees, self.num_branches))
 
     def step(self, action: int):
-        employee_idx = int(action / self.num_branches)
-        branch_idx = int(action % self.num_branches)
+        employee_idx = action[0]
+        branch_idx = action[1]
 
         is_feasible = self.is_feasible_step(employee_idx, branch_idx)
         if is_feasible:
@@ -103,40 +103,40 @@ class Environment:
         """
         Calculate reward when all steps are over
         """
-        working_months_reward = self.calculate_working_months_reward()
+        #working_months_reward = self.calculate_working_months_reward()
         popular_branch_rotation_reward = self.calculate_popular_branch_rotation_reward()
         preferring_branch_rotation_reward = self.calculate_preferring_branch_rotation_reward()  # noqa
-        accessible_branch_reward = self.calculate_accessible_branch_reward()
-        remote_placement_priority_reward = self.calculate_remote_placement_priority_reward()  # noqa
-        remote_placement_count_reward = self.calculate_remote_placement_count_reward()
+        #accessible_branch_reward = self.calculate_accessible_branch_reward()
+        #remote_placement_priority_reward = self.calculate_remote_placement_priority_reward()  # noqa
+        #remote_placement_count_reward = self.calculate_remote_placement_count_reward()
 
         employee_reward = (
-            working_months_reward
-            + popular_branch_rotation_reward
+            #working_months_reward
+            popular_branch_rotation_reward
             + preferring_branch_rotation_reward
-            + accessible_branch_reward
-            + remote_placement_priority_reward
-            + remote_placement_count_reward
+            #+ accessible_branch_reward
+            #+ remote_placement_priority_reward
+            #+ remote_placement_count_reward
         )
 
         #avg_employee_reward_by_branch = np.dot(employee_reward, self.state) / np.sum(self.state, axis=0)
 
         avg_employee_reward_by_branch = employee_reward
 
-        career_score_reward = self.calculate_career_score_reward()
+        #career_score_reward = self.calculate_career_score_reward()
 
         branch_reward = (
             avg_employee_reward_by_branch
-            + career_score_reward
+            #+ career_score_reward
         )
         reward = np.mean(branch_reward)
 
         return reward
 
-    def calculate_working_months_reward(self):
+    # def calculate_working_months_reward(self):
 
-        employee_working_months_reward = 0
-        return employee_working_months_reward
+    #     employee_working_months_reward = 0
+    #     return employee_working_months_reward
 
     def calculate_preferring_branch_rotation_reward(self):
         # 직전에 선호지점에 배치되지 않았었는데, 이번에도 선호지점이 아니면 감점
@@ -173,22 +173,22 @@ class Environment:
 
         return employee_popular_branch_rotation_reward
 
-    def calculate_accessible_branch_reward(self):
+    # def calculate_accessible_branch_reward(self):
 
-        employee_accessible_branch_reward = 0
-        return employee_accessible_branch_reward
+    #     employee_accessible_branch_reward = 0
+    #     return employee_accessible_branch_reward
 
-    def calculate_remote_placement_priority_reward(self):
+    # def calculate_remote_placement_priority_reward(self):
 
-        employee_remote_placement_priority_reward = 0
-        return employee_remote_placement_priority_reward
+    #     employee_remote_placement_priority_reward = 0
+    #     return employee_remote_placement_priority_reward
 
-    def calculate_remote_placement_count_reward(self):
+    # def calculate_remote_placement_count_reward(self):
         
-        remote_placement_counts_reward = 0
-        return remote_placement_counts_reward
+    #     remote_placement_counts_reward = 0
+    #     return remote_placement_counts_reward
 
-    def calculate_career_score_reward(self):
+    # def calculate_career_score_reward(self):
         
-        career_score_reward = 0
-        return career_score_reward
+    #     career_score_reward = 0
+    #     return career_score_reward

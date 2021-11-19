@@ -64,8 +64,8 @@ class PPO(nn.Module):
         s, a, r, s_prime, done_mask, prob_a = self.make_batch()
 
         for i in range(self.K_epoch):
-            
             td_target = r + self.gamma * self.v(s_prime) * done_mask
+            
             delta = td_target - self.v(s)
             delta = delta.detach().numpy()
 
